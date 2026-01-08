@@ -1,0 +1,48 @@
+std::vector<Pose> bresenham(const Pose & start, const Pose & end)
+
+{
+    // Implementation of Bresenham's line drawing algorithm
+    // See en.wikipedia.org/wiki/Bresenham's_line_algorithm
+    std::vector<Pose> line;
+    int dx = end.x - start.x;
+    int dy = end.y - start.y;
+    int xsign = dx > 0 ? 1 : -1;
+    int ysign = dy > 0 ? 1 : -1;
+    dx = std::abs(dx);
+    dy = std::abs(dy);
+    int xx, xy, yx, yy;
+
+    if(dx > dy)
+    {
+        xx = xsign;
+        xy = 0;
+        yx = 0;
+        yy = ysign;
+    }
+    else
+    {
+        int tmp = dx;
+        dx = dy;
+        dy = tmp;
+        xx = 0;
+        xy = ysign;
+        yx = xsign;
+        yy = 0;
+    }
+
+    int D = 2 * dy - dx;
+    int y = 0;
+    line.reserve(dx + 1);
+
+    for (int i = 0; i < dx + 1; i++)
+    {
+        line.emplace_back(Pose(start.x + i * xx + y * yx, start.y + i * xy + y * yy));
+        if(D >= 0)
+        {
+            y++;
+            D -= 2 * dx;
+        }
+        D += 2 * dy;
+    }
+    return line;
+}

@@ -1,0 +1,57 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="bumperbot">
+
+<!-- Get parameters from parent file -->
+<xacro:property name="is_ignition" value="$(arg is_ignition)"/>
+<xacro:property name="is_sim" value="$(arg is_sim)"/>
+<xacro:property name="controllers_file" value="$(arg controllers_file)"/>
+
+<ros2_control name="RobotSystem" type="system">
+    <!-- Simulation mode (gz_sim) -->
+    <xacro:if value="$(arg is_sim)">
+    <hardware>
+        <plugin>gz_ros2_control/GazeboSimSystem</plugin>
+        <param name="update_rate">100</param>
+    </hardware>
+    </xacro:if>
+
+    <!-- Real robot mode -->
+    <xacro:unless value="$(arg is_sim)">
+    <hardware>
+        <plugin>bumperbot_firmware/BumperbotInterface</plugin>
+        <param name="port">/dev/ttyUSB0</param>
+    </hardware>
+    </xacro:unless>
+
+    <joint name="wheel_right_joint">
+        <command_interface name="velocity">
+            <param name="min">-10</param>
+            <param name="max">10</param>
+        </command_interface>
+        <state_interface name="position"/>
+        <state_interface name="velocity"/>
+    </joint>
+
+    <joint name="wheel_left_joint">
+        <command_interface name="velocity">
+            <param name="min">-10</param>
+            <param name="max">10</param>
+        </command_interface>
+        <state_interface name="position"/>
+        <state_interface name="velocity"/>
+    </joint>
+</ros2_control>
+
+<!-- Gazebo ros2_control plugin -->
+<xacro:if value="$(arg is_sim)">
+  <gazebo>
+    <plugin filename="gz_ros2_control-system" name="gz_ros2_control::GazeboSimROS2ControlPlugin">
+        <parameters>$(find bumperbot_controller)/config/bumperbot_controllers.yaml</parameters>
+        <ros>
+            <parameter name="use_sim_time" type="bool">true</parameter>
+        </ros>
+    </plugin>
+  </gazebo>
+</xacro:if>
+
+</robot>
