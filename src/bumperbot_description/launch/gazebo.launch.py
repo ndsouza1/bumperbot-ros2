@@ -123,7 +123,7 @@ def generate_launch_description():
     gz_ros2_laser_bridge = Node(
         package='ros_gz_bridge',
         executable='parameter_bridge',
-        arguments=['/scan@sensor_msgs/msg/LaserScan[ignition.msgs.LaserScan'],  # Note: no closing bracket
+        arguments=['/scan@sensor_msgs/msg/LaserScan[ignition.msgs.LaserScan'],  
         parameters=[{'use_sim_time': use_sim_time}],
         output='screen'
     )

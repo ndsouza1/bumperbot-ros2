@@ -131,25 +131,26 @@ double logodds2prob (double l)
                         std::bind(&MappingWithKnownPoses::scanCallback, this, _1));
   timer = create_wall_timer(std::chrono::seconds(1), 
                            std::bind(&MappingWithKnownPoses::timerCallback, this));
-  tf_buffer_ = std::make_unique<tf2_ros::Buffer>(get_clock());  
+  tf_buffer_ = std::make_unique<tf2_ros::Buffer>(get_clock());  //frame odom and frame of laser which is part of robot
+                                                                // position of the robot within the map
   tf_listener_ = std::make_shared<tf2_ros::TransformListener>(*tf_buffer_);
 }
 
-void MappingWithKnownPoses::scanCallback(const sensor_msgs::msg::LaserScan & scan){
+void MappingWithKnownPoses::scanCallback(const sensor_msgs::msg::LaserScan & scan){ //executed when we recieve a new laser message
   
     geometry_msgs::msg::TransformStamped t;
     try
     {
-        t = tf_buffer_->lookupTransform(map_.header.frame_id, scan.header.frame_id, tf2::TimePointZero);
+        t = tf_buffer_->lookupTransform(map_.header.frame_id, scan.header.frame_id, tf2::TimePointZero); //LidarScan->map
     }
     catch (const tf2::TransformException &ex)
     {
         RCLCPP_ERROR(get_logger(), "Unable to transform between /odom and /base_footprint");
         return;
     }
-
-  Pose robot_p = coordinatesToPose(t.transform.translation.x, t.transform.translation.y, map_.info);
-  if(!poseOnMap(robot_p, map_.info)){
+    //mark the pose on the map
+  Pose robot_p = coordinatesToPose(t.transform.translation.x, t.transform.translation.y, map_.info); 
+  if(!poseOnMap(robot_p, map_.info)){    // check if pose on map
     RCLCPP_ERROR (get_logger(), "Robot is out of the map");
     return;
   }

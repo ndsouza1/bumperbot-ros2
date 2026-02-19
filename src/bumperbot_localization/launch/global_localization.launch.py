@@ -81,5 +81,5 @@ def generate_launch_description():
         amcl_config_arg,
         nav2_map_server,
         nav2_amcl,
-        nav2_lifecycle_manager,
+        nav2_lifecycle_manager
     ])

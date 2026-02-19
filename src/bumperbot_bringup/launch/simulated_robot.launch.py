@@ -16,6 +16,13 @@ def generate_launch_description():
         default_value="false"
     )
 
+    use_teleop_arg = DeclareLaunchArgument(
+        "use_teleop",
+        default_value="false"
+    )    
+
+    use_teleop = LaunchConfiguration("use_teleop")
+
     use_slam = LaunchConfiguration("use_slam")
 
     # ---------------- GAZEBO ----------------
@@ -53,7 +60,8 @@ def generate_launch_description():
                 "joystick_teleop.launch.py"
             ])
         ),
-        launch_arguments={"use_sim_time": "True"}.items()
+        launch_arguments={"use_sim_time": "True"}.items(),
+        condition=IfCondition(use_teleop)
     )
 
     # ---------------- LOCALIZATION / SLAM ----------------
@@ -65,6 +73,7 @@ def generate_launch_description():
                 "global_localization.launch.py"
             ])
         ),
+        launch_arguments={"use_sim_time": "true"}.items(),
         condition=UnlessCondition(use_slam)
     )
 
@@ -76,51 +85,54 @@ def generate_launch_description():
                 "slam.launch.py"
             ])
         ),
+        launch_arguments={"use_sim_time": "true"}.items(),
         condition=IfCondition(use_slam)
+    )
+
+    navigation = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            PathJoinSubstitution([
+                get_package_share_directory("bumperbot_navigation"),
+                "launch",
+                "navigation.launch.py"
+            ])
+        ),
+        launch_arguments={
+                    "use_sim_time": "true",
+                    "cmd_vel_topic": "/bumperbot_controller/cmd_vel" 
+                }.items()
     )
 
     # ---------------- SAFETY STOP ----------------
     safety_stop = Node(
         package="bumperbot_utils",
         executable="safety_stop",
-        output="screen"
+        output="screen",
+        condition=IfCondition(use_teleop)
     )
 
     # ---------------- RVIZ ----------------
-    rviz_localization = Node(
+    rviz = Node(
         package="rviz2",
         executable="rviz2",
         arguments=["-d", PathJoinSubstitution([
-            get_package_share_directory("bumperbot_localization"),
+            get_package_share_directory("nav2_bringup"),
             "rviz",
-            "odometry_motionModel.rviz"
+            "nav2_default_view.rviz"
         ])],
         parameters=[{"use_sim_time": True}],
-        output="screen",
-        condition=UnlessCondition(use_slam)
-    )
-
-    rviz_slam = Node(
-        package="rviz2",
-        executable="rviz2",
-        arguments=["-d", PathJoinSubstitution([
-            get_package_share_directory("bumperbot_mapping"),
-            "rviz",
-            "slam.rviz"
-        ])],
-        parameters=[{"use_sim_time": True}],
-        output="screen",
-        condition=IfCondition(use_slam)
+        output="screen"
     )
 
     return LaunchDescription([
         use_slam_arg,
+        use_teleop_arg,
         gazebo,
         controller,
         joystick,
         safety_stop,
         localization,
         slam,
-        rviz_localization,
-        rviz_slam
+        navigation,
+        rviz
     ])

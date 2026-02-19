@@ -19,6 +19,7 @@ include_directories(include)
 add_executable(mapping_with_known_poses src/mapping_with_known_poses.cpp)
 ament_target_dependencies(mapping_with_known_poses rclcpp sensor_msgs geometry_msgs tf2_ros tf2 nav_msgs sensor_msgs)
 
+
 install(DIRECTORY config launch maps rviz
   DESTINATION share/${PROJECT_NAME}
 )

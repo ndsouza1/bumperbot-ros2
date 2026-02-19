@@ -8,6 +8,8 @@
 #include "tf2_ros/buffer.h"
 #include <geometry_msgs/msg/quaternion_stamped.hpp>
 
+//aim:drawe robot trajectory on the map
+
 namespace bumperbot_mapping{
 
   inline const double PRIOR_PROB =0.5;
@@ -21,11 +23,12 @@ struct Pose{
   int x;
   int y;
 };
-unsigned int poseToCell(const Pose & pose, const nav_msgs::msg::MapMetaData & map_info);
+unsigned int poseToCell(const Pose & pose, const nav_msgs::msg::MapMetaData & map_info); //posee to cell of the map, returns the positionof the vector
 
 Pose coordinatesToPose(const double px, const double py, const nav_msgs::msg::MapMetaData & map_info);
 
-bool poseOnMap(const Pose & pose, const nav_msgs::msg::MapMetaData & map_info);
+bool poseOnMap(const Pose & pose, const nav_msgs::msg::MapMetaData & map_info); // check wether pose within boundary of the map
+
 
 std::vector<Pose> breesnham(const Pose &  start, const Pose & end); //two vertex of the line to draw
 
@@ -43,14 +46,14 @@ public:
 private:
   void scanCallback(const sensor_msgs::msg::LaserScan & scan);
 
-  void timerCallback();
+  void timerCallback();//publish the occupancy griidd of the environment
 
   nav_msgs::msg::OccupancyGrid map_;
   std::vector<double> probability_map_;
   rclcpp::Subscription<sensor_msgs::msg::LaserScan>::SharedPtr scan_sub_;
   rclcpp::Publisher<nav_msgs::msg::OccupancyGrid>::SharedPtr map_pub_;
   rclcpp::TimerBase::SharedPtr timer;
-  std::unique_ptr<tf2_ros::Buffer> tf_buffer_;
+  std::unique_ptr<tf2_ros::Buffer> tf_buffer_; //pose of the robot
   std::shared_ptr<tf2_ros::TransformListener> tf_listener_{nullptr};
 
   double width_;
